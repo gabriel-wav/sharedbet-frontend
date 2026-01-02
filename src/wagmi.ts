@@ -6,14 +6,14 @@ import {
   optimism,
   polygon,
   sepolia,
-  hardhat, // <--- 1. Importei isto
+  localhost,
 } from 'wagmi/chains';
 
 export const config = getDefaultConfig({
-  appName: 'SharedBet App', // Podes mudar o nome aqui se quiseres
-  projectId: 'YOUR_PROJECT_ID', // Podes deixar assim para teste local
+  appName: 'SharedBet App',
+  projectId: 'YOUR_PROJECT_ID',
   chains: [
-    hardhat, // <--- 2. Adicionei aqui (IMPORTANTE: deixa em primeiro para testes)
+    localhost,
     mainnet,
     polygon,
     optimism,
@@ -21,5 +21,5 @@ export const config = getDefaultConfig({
     base,
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia] : []),
   ],
-  ssr: true,
+  ssr: false, // Desabilita SSR para evitar problemas com wagmi
 });

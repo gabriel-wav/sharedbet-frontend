@@ -1,11 +1,12 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useWriteContract } from 'wagmi'; // useWriteContract atualizado
+import { useAccount, useConnect, useDisconnect, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
 import { useState } from 'react';
 import { FACTORY_ADDRESS, FACTORY_ABI, USDC_ADDRESS, USDC_ABI } from '../constants/abis';
 
 export default function Home() {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
   const { writeContractAsync } = useWriteContract();
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +37,7 @@ export default function Home() {
         address: FACTORY_ADDRESS,
         abi: FACTORY_ABI,
         functionName: 'createStrategy',
-        args: [BigInt(1000)], // 10% fee
+        args: [USDC_ADDRESS, BigInt(1000)], // asset (USDC), 10% fee
       });
       console.log("Tx enviada:", tx);
       alert("Estratégia criada! Verifica a consola.");
@@ -52,7 +53,28 @@ export default function Home() {
       <h1 className="text-4xl font-bold">SharedBet DApp</h1>
       
       {/* Botão de Ligar Carteira */}
-      <ConnectButton />
+      <div>
+        {isConnected ? (
+          <div className="flex gap-4">
+            <div className="p-3 bg-green-600 text-white rounded">
+              Conectado: {address?.slice(0, 6)}...{address?.slice(-4)}
+            </div>
+            <button 
+              onClick={() => disconnect()}
+              className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded"
+            >
+              Desconectar
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={() => connect({ connector: connectors[0] })}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold"
+          >
+            Conectar Carteira
+          </button>
+        )}
+      </div>
 
       {address && (
         <div className="flex flex-col gap-4">
@@ -61,7 +83,7 @@ export default function Home() {
             <button 
               onClick={handleMint}
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 p-2 rounded mb-2"
+              className="w-full bg-green-600 hover:bg-green-700 p-2 rounded mb-2 disabled:opacity-50"
             >
               {loading ? 'A processar...' : 'Pedir 1000 Mock USDC'}
             </button>
@@ -73,7 +95,7 @@ export default function Home() {
             <button 
               onClick={handleCreateStrategy}
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded"
+              className="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded disabled:opacity-50"
             >
               Criar Nova Estratégia
             </button>
